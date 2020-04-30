@@ -1,0 +1,9 @@
+airunit_file = "data/airunit.json"
+rounds_file = "data/rounds.json"
+countries_file = "data/countries.json"
+parser_username = ''
+parser_password = ''
+login_url = 'https://www.erepublik.com/en/login'
+battle_console_url = 'https://www.erepublik.com/en/military/battle-console'
+citizen_profile_url = 'https://www.erepublik.com/en/main/citizen-profile-json/'
+country_post_url = 'https://www.erepublik.com/en/main/country-post/older/json/'

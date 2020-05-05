@@ -8,10 +8,15 @@ from modules import constants
 
 
 if __name__ == "__main__":
+    # initialization
+    airunit = dict()
+    rounds = dict()
+    countries = dict()
 
     # get air unit list and rounds list from .json files
     airunit = handlers.get_file_content(constants.airunit_file)
-    rounds = handlers.get_file_content(constants.rounds_file)
+    # old feature
+    # rounds = handlers.get_file_content(constants.rounds_file)
     countries = handlers.get_file_content(constants.countries_file)
 
     # start web session
@@ -24,9 +29,11 @@ if __name__ == "__main__":
     token = erepublik.get_token(session, constants.parser_username, constants.parser_password)
 
     # get country posts (experimental feature)
-    # rounds = erepublik.get_rounds_dict(session, token, 7)
-    # for value in rounds.values():
-    #    value[1] = countries[value[1]]
+    rounds = erepublik.get_rounds_dict(session, token, 7)
+    # save rounds for manual checking
+    handlers.export_to_csv('rounds.csv', 'num,battle_id,country_for,round_num,div', rounds)
+    for value in rounds.values():
+        value[1] = countries[value[1]]
 
     # collect damage data
     for value in rounds.values():
@@ -38,4 +45,4 @@ if __name__ == "__main__":
     airunit = erepublik.update_squad_hits(airunit)
 
     # export to csv/excel
-    handlers.export_to_csv('result.csv', airunit)
+    handlers.export_to_csv('airunit.csv', 'citizen_id,citizen_name,airhit,damage,hits', airunit)

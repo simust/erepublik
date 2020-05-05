@@ -64,10 +64,10 @@ def get_rounds_dict(session, token, page):
         for post in wall_posts:
             # debug
             # print(post['createdAtTimeAgo'])
-            raw_order = re.search(r'\[airunit\](.+)\[\/airunit\]', post['message'])
-            if raw_order:
-                order = raw_order[1].split(' ')
-                rounds[num_round] = [order[0], order[1], order[2], order[3]]
+            order = re.search(r'\[airunit\](\d{6}) (\w+) (\d+) (\d+)\[\/airunit\]', post['message'])
+            if order:
+                rounds[num_round] = [order[1], order[2], order[3], order[4]]
+                num_round += 1
         num_page += 1
     return rounds
 

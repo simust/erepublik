@@ -1,21 +1,35 @@
 # standard modules
 import json
+import sqlite3
 
 
 # file handlers
-def get_file_content(filename):
-    """ Simply function that get content from file """
+def get_json_content(filename):
+    """ Get content from file """
     with open(filename, "r") as file:
         file_content = file.read()
     content = json.loads(file_content)
     return content
 
 
-def export_to_csv(filename, squad):
+def export_to_csv(filename, headers, body):
+    """ Export data to .csv file """
     with open(filename, "w") as file:
         # headers
-        file.write('citizen_id,citizen_name,airhit,damage,hits\n')
+        file.write(f'{headers}\n')
         # body
-        for key, value in squad.items():
-            line = f'{key},{value[0]},{value[1]},{value[2]},{value[3]}\n'
+        for b in body:
+            line = f'{b[0]},{b[1]},{b[2]},{b[3]},{b[4]}\n'
             file.write(line)
+
+
+# database handlers
+def db_select_query(dbname, query):
+    """ Run select query to dbname and return result as list """
+    connection = sqlite3.connect(dbname)
+    connection.row_factory = lambda cur, row: list(row)
+    cursor = connection.cursor()
+    cursor.execute(query)
+    content = cursor.fetchall()
+    connection.close()
+    return content

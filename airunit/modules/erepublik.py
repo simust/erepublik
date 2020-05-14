@@ -1,5 +1,6 @@
 import re
 from modules.constants import login_url
+from modules.constants import main_url
 from modules.constants import citizen_profile_url
 from modules.constants import battle_console_url
 from modules.constants import country_post_url
@@ -52,9 +53,16 @@ def get_country_post_page(session, token, page):
     return response.json()
 
 
+def get_day(session):
+    # get day from erepublik
+    response = session.get(main_url, headers={'User-Agent': UserAgent().chrome})
+    day = re.search(r'"eDay":(\d+),', response.text)[1]
+    return day
+
+
 # country feed
-def get_rounds_dict(session, token, page):
-    rounds = dict()
+def get_rounds(session, token, page, stop=''):
+    rounds = []
 
     num_round = 1
     num_page = 1
@@ -64,9 +72,11 @@ def get_rounds_dict(session, token, page):
         for post in wall_posts:
             # debug
             # print(post['createdAtTimeAgo'])
+            if post['createdAtTimeAgo'] == stop:
+                return rounds
             order = re.search(r'\[airunit\](\d{6}) (\w+) (\d+) (\d+)\[\/airunit\]', post['message'])
             if order:
-                rounds[num_round] = [order[1], order[2], order[3], order[4]]
+                rounds.append([order[1], order[2], order[3], order[4]])
                 num_round += 1
         num_page += 1
     return rounds
@@ -82,21 +92,20 @@ def get_profile_airhit(session, citizen_id):
 
 
 def update_squad_airhit(session, squad):
-    for key, value in squad.items():
-        # squad - citizen_id: citizen_name, airhit, damage, hits
-        value[1] = get_profile_airhit(session, key)
+    for member in squad:
+        # member - citizen_id, citizen_name, airhit, damage, hits
+        member[2] = get_profile_airhit(session, str(member[0]))
     return squad
 
 
 # damage
 def get_round_stats(session, token, battle_id, battle_side, round, division):
+    """ Get round stats using session, token, battle_id, battle_side, round and division"""
     round_stats = dict()
     # for 5 battle stats pages getting raw data and processing it
     num_page = 1
     while num_page <= 5:
         raw_stats = get_battle_page(session, token, battle_id, round, division, num_page)
-        # delete rounds info
-        # del raw_stats['rounds']
 
         # extract fighter citizenId, citizenName and raw_value (damage/kills)
         fighter_data = raw_stats[battle_side]['fighterData']
@@ -110,18 +119,20 @@ def get_round_stats(session, token, battle_id, battle_side, round, division):
 
 
 def update_squad_dmg(squad, round_stats):
-    for member in squad.keys():
+    """ Update squad damage using squad and rounds stats """
+    for member in squad:
         for fighter in round_stats.keys():
-            if member == str(fighter):
-                # squad[member] - citizen_name, airhit, damage, hits
-                # fighter - citizen_name, damage
-                squad[member][2] += round_stats[fighter][1]
+            if member[0] == fighter:
+                # member - citizen_id, citizen_name, airhit, damage, hits
+                # round_stats[fighter] - citizen_name, damage
+                member[3] += round_stats[fighter][1]
     return squad
 
 
 # hits
 def update_squad_hits(squad):
-    for value in squad.values():
-        # squad - citizen_id: citizen_name, airhit, damage, hits
-        value[3] = int(value[2] / value[1])
+    """ Updata squad hits using already collected squad data (dmg / hit) """
+    for member in squad:
+        # member - citizen_id, citizen_name, airhit, damage, hits
+        member[4] = int(member[3] / member[2])
     return squad

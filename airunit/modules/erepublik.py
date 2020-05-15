@@ -16,6 +16,7 @@ def get_profile(session, citizen_id):
 
 
 def get_token(session, username, password):
+    """ Get erepublik token and authenticate it by login """
     # get server-generated token from erepublik
     response = session.get(login_url, headers={'User-Agent': UserAgent().chrome})
     token = re.search(r'id="_token" name="_token" value="(.+)" />', response.text)[1]
@@ -61,7 +62,8 @@ def get_day(session):
 
 
 # country feed
-def get_rounds(session, token, page, stop=''):
+def get_feed_rounds(session, token, page, stop=''):
+    """ Get rounds with orders from country feed """
     rounds = []
 
     num_round = 1

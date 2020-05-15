@@ -1,9 +1,8 @@
 # standard modules
-import sqlite3
 import requests
 
 # custom modules
-from modules import erepublik, constants
+from modules import erepublik, constants, handlers
 
 if __name__ == "__main__":
     # initialization
@@ -16,7 +15,7 @@ if __name__ == "__main__":
     token = erepublik.get_token(session, constants.parser_username, constants.parser_password)
 
     # get last 24h rounds from country posts
-    rounds = erepublik.get_rounds(session, token, 3, 'yesterday')
+    rounds = erepublik.get_feed_rounds(session, token, 3, 'yesterday')
 
     # get current day
     day = erepublik.get_day(session)
@@ -27,8 +26,5 @@ if __name__ == "__main__":
         r.append(day)
 
     # add rounds to db
-    connection = sqlite3.connect(constants.airunit_db)
-    cursor = connection.cursor()
-    cursor.executemany('INSERT INTO rounds VALUES(?, ?, ? ,?, ?)', rounds)
-    connection.commit()
-    connection.close()
+    query = 'INSERT INTO rounds VALUES(?, ?, ? ,?, ?)'
+    handlers.db_insert_query(constants.airunit_db, query, rounds)

@@ -33,3 +33,12 @@ def db_select_query(dbname, query):
     content = cursor.fetchall()
     connection.close()
     return content
+
+
+def db_insert_query(dbname, query, data):
+    """ Run insert query to dbname """
+    connection = sqlite3.connect(dbname)
+    cursor = connection.cursor()
+    cursor.executemany(query, data)
+    connection.commit()
+    connection.close()
